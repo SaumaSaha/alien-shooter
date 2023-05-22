@@ -1,56 +1,55 @@
-const SHOOTER = "🚀";
+const { readFromStdin } = require("./reader.js");
+const { Shooter } = require("./shooter.js");
+
 const ALIEN = "👾";
 const BOOM = "💥";
 
-const displayShooter = (shooterPosition) => {
-  const shooterRange = new Array(5).fill("  ");
-  shooterRange[shooterPosition] = SHOOTER;
-  console.log(`\n${shooterRange.join(" ")}`);
-}
-
 const displayGrid = (grid) => {
-  console.clear();
-  console.log(grid.map((line) => line.join(" ")).join("\n"));
+	console.clear();
+	console.log(grid.map((line) => line.join(" ")).join("\n")+"\n");
 };
 
-const display = (shooterPosition, grid) => {
-  displayGrid(grid);
-  displayShooter(shooterPosition)
-}
-
-const generateRandomDigit = () => {
-  return Math.floor(Math.random() * 5);
+const display = (grid, shooter) => {
+	displayGrid(grid);
+	shooter.display();
 };
 
+const getTargetLoon = (y, x, grid) => {
+	if (y === 0) return [0, x];
+	if (grid[y][x] !== "  ") return [y, x];
+	return getTargetLoon(y - 1, x, grid);
+};
 
-const getTargetLoon = (x, y, grid) => {
-  if (x === 0) return [0, y];
-  if (grid[x][y] !== "  ") return [x, y];
-  return getTargetLoon(x - 1, y, grid);
-}
-
-const boom = (x, y, grid) => {
-  grid[x][y] = BOOM;
-  display(y, grid);
-  grid[x][y] = "  ";
-  setTimeout(() => display(y, grid), 200);
+const boom = (y, x, grid, shooter) => {
+	grid[y][x] = BOOM;
+	display(grid, shooter);
+	grid[y][x] = "  ";
+	setTimeout(() => display(grid, shooter), 200);
 };
 
 const main = () => {
-  const loons = new Array(5).fill(" ");
-  const grid = loons.map(row => new Array(5).fill(ALIEN))
-  const x = 4;
+	const gridSize = +process.argv[2];
+	const loons = new Array(gridSize).fill(" ");
+	const shooter = new Shooter("🚀", gridSize);
+	const grid = loons.map((row) => new Array(gridSize).fill(ALIEN));
+	const y = gridSize - 1;
 
-  const popLoon = () => {
-    const y = generateRandomDigit();
-    const targetLoon = getTargetLoon(x, y, grid);
-    boom(...targetLoon, grid);
-    if (!grid.flat().includes(ALIEN)) {
-      clearInterval(gameTimer);
-    }
-  }
+	const updateShooterPosition = (data) => {
+		if (data === "a\n") shooter.moveLeft();
+		if (data === "d\n") shooter.moveRight();
+	};
 
-  const gameTimer = setInterval(popLoon, 400);
-}
+	const popLoon = (data, intervalId) => {
+		updateShooterPosition(data);
+		const shooterPosition = shooter.position;
+		const targetLoon = getTargetLoon(y, shooterPosition, grid);
+		boom(...targetLoon, grid, shooter);
+		if (!grid.flat().includes(ALIEN)) {
+			clearInterval(intervalId);
+		}
+	};
+
+	readFromStdin(popLoon);
+};
 
 main();
