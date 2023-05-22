@@ -3,7 +3,7 @@ const ALIEN = "👾";
 const BOOM = "💥";
 
 const displayShooter = (shooterPosition) => {
-  const shooterRange = new Array(8).fill("  ");
+  const shooterRange = new Array(5).fill("  ");
   shooterRange[shooterPosition] = SHOOTER;
   console.log(`\n${shooterRange.join(" ")}`);
 }
@@ -33,7 +33,7 @@ const boom = (x, y, grid) => {
   grid[x][y] = BOOM;
   display(y, grid);
   grid[x][y] = "  ";
-  setTimeout(() => display(y, grid), 300);
+  setTimeout(() => display(y, grid), 200);
 };
 
 const main = () => {
@@ -50,7 +50,7 @@ const main = () => {
     }
   }
 
-  const gameTimer = setInterval(popLoon, 700);
+  const gameTimer = setInterval(popLoon, 400);
 }
 
 main();
